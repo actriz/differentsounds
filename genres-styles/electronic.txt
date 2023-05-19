@@ -1,0 +1,336 @@
+Ambient
+Ambient dub
+Dark ambient
+Ambient industrial
+Dungeon synth
+Drone
+Illbient
+New-age
+Andean new-age
+Neoclassical new-age
+Space
+Reductionism
+Lowercase
+Onkyokei
+Bass
+Footwork
+Future bass
+Kawaii future bass
+Jungle terror
+UK bass
+Wave
+Hardwave
+Breakbeat
+Acid breaks
+Baltimore club
+Jersey club
+Philly club
+Big beat
+Breakbeat hardcore
+4-beat
+Darkcore
+Hardcore breaks
+Broken beat
+Florida breaks
+Nu skool breaks
+Progressive breaks
+Psychedelic breakbeat
+Chill-out
+Downtempo
+Psybient
+Psydub
+Trip hop
+Trip rock
+Chopped and screwed
+Disco
+Afro/cosmic
+Electro-disco
+Hi-NRG
+Eurobeat
+Eurodance
+Italo dance
+Italo disco
+Spacesynth
+Space disco
+Eurodisco
+Nu-disco
+Post-disco
+Boogie
+City pop
+Drum and bass
+Darkstep
+Drumfunk
+Drumstep
+Hardstep
+Intelligent drum and bass
+Atmospheric drum and bass
+Jazzstep
+Jump-up
+Liquid funk
+Neurofunk
+Sambass
+Techstep
+Dub
+Dub poetry
+Dubtronica
+Electroacoustic
+Acousmatic
+Electroacoustic improvisation
+Live electronics
+Musique concrète
+Soundscape
+Electronic rock
+Dance-rock
+Alternative dance
+Madchester
+Baggy
+New rave
+Dance-punk
+Krautrock
+New wave
+Cold wave
+Dark wave
+Neoclassical dark wave
+Neue Deutsche Todeskunst
+Ethereal wave
+Nu-gaze
+Minimal wave
+Neue Deutsche Welle
+New romantic
+Sophisti-pop
+Synth-pop
+Dance-pop
+Disco polo
+Electroclash
+Electropop
+Hyperpop
+Post-rock
+Space rock
+Synth-metal
+Electronicore
+Synth-punk
+Electronica
+Folktronica
+Indietronica
+Jazztronica
+Laptronica
+Livetronica
+Progressive electronic
+Kosmische musik
+Asian underground
+African electronic dance
+Afrobeats
+Azonto
+Coupé-décalé
+Kuduro
+Mahraganat
+Shangaan electro
+Budots
+Changa tuki
+Dancehall pop
+Funk carioca
+Funk ostentação
+Melodic funk
+Proibidão
+Rasteirinha
+Merenhouse
+Nortec
+Rabòday
+Rara tech
+Russ
+Shamstep
+Tribal guarachero
+Worldbeat
+Manila sound
+Funk fusion genres
+Acid jazz
+Funktronica
+Synth-funk
+Jungle
+Ragga jungle
+Hardcore
+Bouncy techno
+Breakcore
+Digital hardcore
+Frenchcore
+Gabber
+Early hardcore
+Mainstream hardcore
+Happy hardcore
+UK hardcore
+Industrial hardcore
+J-core
+Lento violento
+Mákina
+Speedcore
+Extratone
+Flashcore
+Splittercore
+Hardstyle
+Dubstyle
+Jumpstyle
+Hauntology
+Chillwave
+Hypnagogic pop
+Synthwave
+Darksynth
+Sovietwave
+Vaporwave
+Dreampunk
+Future funk
+Hardvapour
+Mallsoft
+Hip hop fusion genres
+Afroswing
+Alternative hip hop
+Hipster hop
+Cloud rap
+Crunk
+Crunkcore
+Snap
+Electro
+Latin freestyle
+Emo rap
+Instrumental hip hop
+Lofi hip hop
+Miami bass
+Mumble rap
+Trap
+Afro trap
+Drill
+UK drill
+Latin trap
+Phonk
+Trap (EDM)
+UK trap
+House
+Acid house
+Amapiano
+Gqom
+Kidandali
+Kwaito
+Ambient house
+Balearic beat
+Ballroom
+Bass house
+Blog house
+Brazilian bass
+Slap house
+Chicago hard house
+Chicago house
+Deep house
+Disco house
+Diva house
+Hardbag
+Electro house
+Big room house
+Complextro
+Dutch house
+Fidget house
+Melbourne bounce
+Electro swing
+French house
+Funky house
+Future house
+Garage house
+Ghetto house
+Ghettotech
+Juke house
+Hip house
+Italo house
+Jazz house
+Latin house
+Melodic house
+Microhouse
+Moombahcore
+Moombahton
+Moombahsoul
+New Jersey sound
+Outsider house
+Progressive house
+Soulful house
+Tech house
+Tribal house
+Tropical house
+UK hard house
+Hard NRG
+Pumping house
+Hardbass
+Scouse house
+Industrial
+Deconstructed club
+Electro-industrial
+Dark electro
+Aggrotech
+Futurepop
+New beat
+Industrial hip hop
+Industrial metal
+Cyber metal
+Neue Deutsche Härte
+Industrial rock
+Martial industrial
+Witch house
+Drill 'n' bass
+Glitch
+Neo soul
+Nightcore
+Noise
+Danger
+Harsh noise
+Harsh noise wall
+Japanoise
+Power electronics
+Death industrial
+Power noise
+Plunderphonics
+Sampledelia
+Techno
+Acid techno
+Ambient techno
+Birmingham sound
+Bleep techno
+Detroit techno
+Dub techno
+Hardtechno
+Free tekno
+Industrial techno
+Minimal techno
+Schaffel
+Toytown techno
+Tecno brega
+Trance
+Acid trance
+Balearic trance
+Dream trance
+Eurotrance
+Goa trance
+Nitzhonot
+Hard trance
+Progressive trance
+Psychedelic trance
+Suomisaundi
+Tech trance
+Uplifting trance
+Vocal trance
+UK garage
+2-step garage
+Bassline
+Breakstep
+Dubstep
+Brostep
+Post-dubstep
+Reggaestep
+Riddim
+Future garage
+Grime
+Grindie
+Speed garage
+UK funky
+Funkstep
+Wonky
+Video game
+Chiptune
+Bitpop
+Nintendocore
+Skweee
