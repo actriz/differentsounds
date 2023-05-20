@@ -1,7 +1,7 @@
 
 <h1 align="center">
   <br>
-  <a href="https://github.com/raulgalis/differentsounds"><img src="./material/img.png" width="200"></a>
+  <img src="./stuff/img.png" width="200">
   <br>
   Different Sounds, Random Radio Discord BOT
   <br>
