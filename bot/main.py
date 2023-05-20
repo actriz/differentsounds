@@ -144,21 +144,7 @@ async def start(ctx):
                 voice = get(bot.voice_clients, guild=ctx.guild)
                 with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
                     info = ydl.extract_info(url_link, download=False)
-                    voice.play(FFmpegPCMAudio(info['url'], **FFMPEG_OPTIONS))
-
-                # Hold for Next Song
-                n = duration.split(':')
-                if len(n) == 2:
-                    minutes = int(n[0])
-                    seconds = int(n[1])
-                    s = minutes*60+seconds
-                else:
-                    hour = int(n[0])
-                    minute = int(n[1])
-                    seconds = int(n[2])
-                    s = hour*3600+minute*60+seconds
-                await asyncio.sleep(s+3)
-                await ctx.invoke(bot.get_command('start'))
+                    voice.play(FFmpegPCMAudio(info['url'], **FFMPEG_OPTIONS), after = lambda _: bot.loop.create_task(ctx.invoke(bot.get_command('start'))))
 
             except:
                 errorLog = open('log_error', 'a')
@@ -178,7 +164,6 @@ async def new(ctx):
     if(ctx.author.voice):
         voice = get(bot.voice_clients, guild=ctx.guild)
         voice.stop()
-        await ctx.invoke(bot.get_command('start'))
     else:
         await ctx.send('You are not in a voice channel')
 

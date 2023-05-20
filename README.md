@@ -9,7 +9,7 @@
 
 ## About The Project
 
-> Just listen music that your algorithm not choose
+Just listen music that your algorithm not choose
 
 ## Commands
 
@@ -20,7 +20,7 @@
 
 ## Quick Start
 
-> Follow the next steps
+Follow the next steps
 
 ```bash
 # Clone this repository
