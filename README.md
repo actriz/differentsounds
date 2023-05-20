@@ -11,7 +11,14 @@
 
 > Just listen music that your algorithm not choose
 
-## How To Use
+## Commands
+
+- .join: This command makes the bot access the voice channel
+- .start: This command makes the bot start the radio session
+- .new: This command makes the bot pass to another new song
+- .stop: This command makes the bot end the radio session
+
+## Quick Start
 
 > Follow the next steps
 
@@ -31,10 +38,3 @@ token = os.getenv('discord')
 # Run main.py
 $ python main.py
 ```
-
-## Commands
-
-- .join: This command makes the bot access the voice channel
-- .start: This command makes the bot start the radio session
-- .new: This command makes the bot pass to another new song
-- .stop: This command makes the bot end the radio session
