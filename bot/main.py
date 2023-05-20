@@ -170,7 +170,7 @@ async def start(ctx):
         await ctx.send('You are not in a voice channel')
 
 # New Command
-@bot.command(pass_context=True, name='new', help='This command makes the bot put another new song')
+@bot.command(pass_context=True, name='new', help='This command makes the bot pass to another new song')
 async def new(ctx):
     if(ctx.voice_client == None):
         await ctx.send("I'm not in a voice channel, use the '.join' command to make me join")
