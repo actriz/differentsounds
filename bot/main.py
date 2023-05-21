@@ -67,7 +67,7 @@ async def start(ctx):
             # Random Query
             query = random_genre+' '+random_style
             
-            # Log Track 1
+            # Log Trace 0
             history = open('log_music', 'a')
             history.write(f'Query: {query}\t')
             history.close()
@@ -84,7 +84,7 @@ async def start(ctx):
                 else:
                     random_element = random.randint(0, len(response)-1)
                 
-                # Log Track 2
+                # Log Trace 1
                 history = open('log_music', 'a')
                 history.write(f'Random Element: {random_element}\t')
                 history.close()
@@ -104,7 +104,7 @@ async def start(ctx):
                     songs = [ _.title for _ in tracklist]
                     song = random.choice(songs)
                 
-                # Log Track 3
+                # Log Trace 2
                 history = open('log_music', 'a')
                 history.write(f'ID: {response[random_element].id}\t')
                 history.write(f'Author: {author}\t')
@@ -114,7 +114,7 @@ async def start(ctx):
                 # Merge the Author and Song
                 authorAndSong = author + ' ' + song
                 
-                # Log Track 4
+                # Log Trace 3
                 history = open('log_music', 'a')
                 history.write(f'Search: {authorAndSong}\n')
                 history.close()
@@ -144,14 +144,13 @@ async def start(ctx):
                 voice = get(bot.voice_clients, guild=ctx.guild)
                 with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
                     info = ydl.extract_info(url_link, download=False)
-                    voice.play(FFmpegPCMAudio(info['url'], **FFMPEG_OPTIONS), after = lambda _: bot.loop.create_task(ctx.invoke(bot.get_command('start'))))
+                    voice.play(FFmpegPCMAudio(info['url'], **FFMPEG_OPTIONS), after=lambda _:bot.loop.create_task(ctx.invoke(bot.get_command('start'))))
 
             except:
                 errorLog = open('log_error', 'a')
                 errorLog.write(f'Query: {query}\tRandom Element: {random_element}\tID: {response[random_element].id}\tAuthor: {author}\tSong: {song}\tSearch: {authorAndSong}\n')
                 errorLog.close()
                 await ctx.invoke(bot.get_command('start'))
-
     else:
         await ctx.send('You are not in a voice channel')
 
@@ -160,12 +159,11 @@ async def start(ctx):
 async def new(ctx):
     if(ctx.voice_client == None):
         await ctx.send("I'm not in a voice channel, use the '.join' command to make me join")
-
     if(ctx.author.voice):
         voice = get(bot.voice_clients, guild=ctx.guild)
         voice.stop()
     else:
         await ctx.send('You are not in a voice channel')
 
-# Different Sounds Lauch BOT
+# Launch Random Radio BOT
 bot.run(token)
