@@ -1,7 +1,0 @@
-python3-discogs-client==2.6
-discord==2.2.3
-discord.py==2.2.3
-youtube-dl==2021.12.17
-yt-dlp @ https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
-python-dotenv==1.0.0
-ytmusicapi==1.0.2
