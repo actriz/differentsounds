@@ -29,177 +29,197 @@ ytmusic = YTMusic()
 
 # Join Command
 @bot.command(
-    pass_context=True,
     name="join",
     help="This command makes the bot access the voice channel",
 )
 async def join(ctx):
     if ctx.author.voice:
         channel = ctx.message.author.voice.channel
-        await channel.connect()
+        voice_client = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+        if voice_client is not None:
+            await ctx.send("I am already in a voice channel")
+            return
+        try:
+            await channel.connect()
+            await ctx.send(f"Joined {channel}")
+        except Exception as e:
+            await ctx.send(f"Failed to join the channel: {str(e)}")
     else:
         await ctx.send("You are not in a voice channel")
 
 
 # Stop Command
 @bot.command(
-    pass_context=True,
     name="stop",
     help="This command makes the bot end the radio session",
 )
 async def stop(ctx):
-    if ctx.author.voice:
-        if ctx.voice_client:
-            await ctx.guild.voice_client.disconnect()
+    if ctx.voice_client:
+        if ctx.author.voice and ctx.author.voice.channel == ctx.voice_client.channel:
+            try:
+                await ctx.voice_client.disconnect()
+                await ctx.send("Disconnected from the voice channel")
+            except Exception as e:
+                await ctx.send(f"Failed to disconnect: {str(e)}")
         else:
             await ctx.send(
-                "I'm not in a voice channel, use the '.join' command to make me join"
+                "You need to be in the same voice channel as the bot to stop it"
             )
     else:
-        await ctx.send("You are not in a voice channel")
+        await ctx.send("I'm not in a voice channel")
 
 
 # Start Command
 @bot.command(
-    pass_context=True,
     name="start",
     help="This command makes the bot start the radio session",
 )
 async def start(ctx):
-    if ctx.voice_client == None:
+    if ctx.voice_client is None:
         await ctx.send(
             "I'm not in a voice channel, use the '.join' command to make me join"
         )
-    if ctx.author.voice:
-        if ctx.voice_client.is_playing() == True:
-            pass
+        return
+
+    if not (ctx.author.voice and ctx.author.voice.channel == ctx.voice_client.channel):
+        await ctx.send(
+            "You need to be in the same voice channel as the bot to use this command"
+        )
+        return
+
+    if ctx.voice_client.is_playing():
+        await ctx.send("The radio session is already playing")
+        return
+
+    try:
+        # Random Genre
+        genres = os.listdir("./genres-styles")
+        genres_without_txt = [_.replace(".txt", "") for _ in genres]
+        random_genre = random.choice(genres_without_txt)
+
+        # Random Style
+        styles = open(f"./genres-styles/{random_genre}.txt").read().splitlines()
+        random_style = random.choice(styles)
+
+        # Random Query
+        query = random_genre + " " + random_style
+
+        # Log Trace 0
+        history = open("log_music", "a")
+        history.write(f"Query: {query}\t")
+        history.close()
+
+        # Generate the Query for Discogs API
+        response = discogs.search(query, type="release")
+
+        # Select the Random Music Agent Element
+        random_element = random.randint(0, min(9999, len(response)) - 1)
+
+        # Log Trace 1
+        history = open("log_music", "a")
+        history.write(f"Random Element: {random_element}\t")
+        history.close()
+
+        # Get the Author and Song
+        selected_release = response[random_element]
+        if selected_release.artists[0].name == "Various":
+            tracklist = selected_release.tracklist
+            random_song_author = random.choice(tracklist)
+            song = random_song_author.title
+            author = (
+                random_song_author.artists[0].name if random_song_author.artists else ""
+            )
         else:
-            # Random Genre
-            genres = os.listdir("../genres-styles")
-            genres_without_txt = [_.replace(".txt", "") for _ in genres]
-            random_genre = random.choice(genres_without_txt)
+            tracklist = selected_release.tracklist
+            author = selected_release.artists[0].name
+            song = random.choice(tracklist).title
 
-            # Random Style
-            styles = open(f"../genres-styles/{random_genre}.txt").read().splitlines()
-            random_style = random.choice(styles)
+        # Log Trace 2
+        history = open("log_music", "a")
+        history.write(f"ID: {selected_release.id}\t")
+        history.write(f"Author: {author}\t")
+        history.write(f"Song: {song}\t")
+        history.close()
 
-            # Random Query
-            query = random_genre + " " + random_style
+        # Merge the Author and Song
+        author_and_song = f"{author} {song}"
 
-            # Log Trace 0
-            history = open("log_music", "a")
-            history.write(f"Query: {query}\t")
-            history.close()
+        # Log Trace 3
+        history = open("log_music", "a")
+        history.write(f"Search: {author_and_song}\n")
+        history.close()
 
-            # Generate the Query for Discogs API
-            response = discogs.search(query, type="release")
+        # Youtube Music Search and Get Data
+        search_results = ytmusic.search(author_and_song, filter="songs")
+        video_id = search_results[0]["videoId"]
+        title = search_results[0]["title"]
+        artists = search_results[0]["artists"][0]["name"]
+        photo = search_results[0]["thumbnails"][1]["url"]
+        duration = search_results[0]["duration"]
+        url_link = f"https://music.youtube.com/watch?v={video_id}"
 
-            try:
-                # Select the Random Music Agent Element
-                if len(response) == 1:
-                    random_element = 0
-                elif len(response) >= 9999:
-                    random_element = random.randint(0, 9999 - 1)
-                else:
-                    random_element = random.randint(0, len(response) - 1)
+        # Discord Embed Configuration
+        embed = discord.Embed(
+            title="Now Playing",
+            description=f'[{title + " " + artists}]({url_link})',
+            color=discord.Colour.random(),
+        )
+        embed.set_thumbnail(url=photo)
+        embed.add_field(name="Duration", value=f"{duration}")
+        await ctx.send(embed=embed)
 
-                # Log Trace 1
-                history = open("log_music", "a")
-                history.write(f"Random Element: {random_element}\t")
-                history.close()
+        # Options and Configuration to Play the URL Song
+        YDL_OPTIONS = {"format": "bestaudio", "noplaylist": "True"}
+        FFMPEG_OPTIONS = {
+            "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
+            "options": "-vn",
+        }
+        voice = get(bot.voice_clients, guild=ctx.guild)
+        with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
+            info = ydl.extract_info(url_link, download=False)
+            voice.play(
+                discord.FFmpegPCMAudio(info["url"], **FFMPEG_OPTIONS),
+                after=lambda _: bot.loop.create_task(start(ctx)),
+            )
 
-                # Get the Author and Song
-                if response[random_element].artists[0].name == "Various":
-                    tracklist = response[random_element].tracklist
-                    random_song_author = random.randint(0, len(tracklist) - 1)
-                    song = tracklist[random_song_author].title
-                    try:
-                        author = tracklist[random_song_author].artists[0].name
-                    except:
-                        author = ""
-                else:
-                    tracklist = response[random_element].tracklist
-                    author = response[random_element].artists[0].name
-                    songs = [_.title for _ in tracklist]
-                    song = random.choice(songs)
-
-                # Log Trace 2
-                history = open("log_music", "a")
-                history.write(f"ID: {response[random_element].id}\t")
-                history.write(f"Author: {author}\t")
-                history.write(f"Song: {song}\t")
-                history.close()
-
-                # Merge the Author and Song
-                authorAndSong = author + " " + song
-
-                # Log Trace 3
-                history = open("log_music", "a")
-                history.write(f"Search: {authorAndSong}\n")
-                history.close()
-
-                # Youtube Music Search and Get Data
-                search_results = ytmusic.search(authorAndSong, filter="songs")
-                video_id = search_results[0]["videoId"]
-                title = search_results[0]["title"]
-                artists = search_results[0]["artists"][0]["name"]
-                photo = search_results[0]["thumbnails"][1]["url"]
-                duration = search_results[0]["duration"]
-                url_link = f"https://music.youtube.com/watch?v={video_id}"
-
-                # Discord Embed Configuration
-                embed = discord.Embed(
-                    title="Now Playing",
-                    description=f'[{title + " " + artists}]({url_link})',
-                    color=discord.Colour.random(),
-                )
-                embed.set_thumbnail(url=photo)
-                embed.add_field(name="Duration", value=f"{duration}")
-                await ctx.send(embed=embed)
-
-                # Options and Configuration to Play the URL Song
-                YDL_OPTIONS = {"format": "bestaudio", "noplaylist": "True"}
-                FFMPEG_OPTIONS = {
-                    "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
-                    "options": "-vn",
-                }
-                voice = get(bot.voice_clients, guild=ctx.guild)
-                with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
-                    info = ydl.extract_info(url_link, download=False)
-                    voice.play(
-                        FFmpegPCMAudio(info["url"], **FFMPEG_OPTIONS),
-                        after=lambda _: bot.loop.create_task(
-                            ctx.invoke(bot.get_command("start"))
-                        ),
-                    )
-
-            except:
-                errorLog = open("log_error", "a")
-                errorLog.write(
-                    f"Query: {query}\tRandom Element: {random_element}\tID: {response[random_element].id}\tAuthor: {author}\tSong: {song}\tSearch: {authorAndSong}\n"
-                )
-                errorLog.close()
-                await ctx.invoke(bot.get_command("start"))
-    else:
-        await ctx.send("You are not in a voice channel")
+    except Exception as e:
+        errorLog = open("log_error", "a")
+        errorLog.write(
+            f"Query: {query}\tRandom Element: {random_element}\tID: {selected_release.id}\tAuthor: {author}\tSong: {song}\tSearch: {author_and_song}\n"
+        )
+        errorLog.close()
+        await ctx.send(f"An error occurred: {str(e)}")
+        await ctx.invoke(bot.get_command("start"))
 
 
 # New Command
 @bot.command(
-    pass_context=True,
     name="new",
     help="This command makes the bot pass to another new song",
 )
 async def new(ctx):
-    if ctx.voice_client == None:
+    if ctx.voice_client is None:
         await ctx.send(
             "I'm not in a voice channel, use the '.join' command to make me join"
         )
-    if ctx.author.voice:
-        voice = get(bot.voice_clients, guild=ctx.guild)
-        voice.stop()
-    else:
-        await ctx.send("You are not in a voice channel")
+        return
+
+    if not (ctx.author.voice and ctx.author.voice.channel == ctx.voice_client.channel):
+        await ctx.send(
+            "You need to be in the same voice channel as the bot to use this command"
+        )
+        return
+
+    if not ctx.voice_client.is_playing():
+        await ctx.send("The bot is not currently playing any music")
+        return
+
+    try:
+        ctx.voice_client.stop()
+        await ctx.send("Skipped to a new song")
+
+    except Exception as e:
+        await ctx.send(f"Failed to skip to a new song: {str(e)}")
 
 
 # Launch Random Radio BOT
