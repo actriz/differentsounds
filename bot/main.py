@@ -26,6 +26,10 @@ bot = commands.Bot(intents=discord.Intents().all(), command_prefix=".")
 # Activate Youtube Music
 ytmusic = YTMusic()
 
+# Global variable to control the radio session
+is_stopped = False
+is_wanted = None
+
 
 # Join Command
 @bot.command(
@@ -54,9 +58,11 @@ async def join(ctx):
     help="This command makes the bot end the radio session",
 )
 async def stop(ctx):
+    global is_stopped
     if ctx.voice_client:
         if ctx.author.voice and ctx.author.voice.channel == ctx.voice_client.channel:
             try:
+                is_stopped = True
                 await ctx.voice_client.disconnect()
                 await ctx.send("Disconnected from the voice channel")
             except Exception as e:
@@ -75,6 +81,8 @@ async def stop(ctx):
     help="This command makes the bot start the radio session",
 )
 async def start(ctx):
+    global is_stopped
+    global is_wanted
     if ctx.voice_client is None:
         await ctx.send(
             "I'm not in a voice channel, use the '.join' command to make me join"
@@ -91,26 +99,42 @@ async def start(ctx):
         await ctx.send("The radio session is already playing")
         return
 
+    if is_stopped:
+        is_stopped = False
+        return
+
     try:
-        # Random Genre
-        genres = os.listdir("./genres-styles")
-        genres_without_txt = [_.replace(".txt", "") for _ in genres]
-        random_genre = random.choice(genres_without_txt)
+        if is_wanted is None:
+            # Random Genre
+            genres = os.listdir("./genres-styles")
+            genres_without_txt = [_.replace(".txt", "") for _ in genres]
+            random_genre = random.choice(genres_without_txt)
 
-        # Random Style
-        styles = open(f"./genres-styles/{random_genre}.txt").read().splitlines()
-        random_style = random.choice(styles)
+            # Random Style
+            styles = open(f"./genres-styles/{random_genre}.txt").read().splitlines()
+            random_style = random.choice(styles)
 
-        # Random Query
-        query = random_genre + " " + random_style
+            # Random Query
+            query = random_genre + " " + random_style
 
-        # Log Trace 0
-        history = open("log_music", "a")
-        history.write(f"Query: {query}\t")
-        history.close()
+            # Log Trace 0
+            history = open("log_music", "a")
+            history.write(f"Query: {query}\t")
+            history.close()
 
-        # Generate the Query for Discogs API
-        response = discogs.search(query, type="release")
+            # Generate the Query for Discogs API
+            response = discogs.search(query, type="release")
+        else:
+            # Generate the Query for Discogs API
+            response = discogs.search(is_wanted, type="release")
+
+            # Log Trace 0
+            history = open("log_music", "a")
+            history.write(f"Query: {is_wanted}\t")
+            history.close()
+
+            # Generate the Query for Discogs API
+            response = discogs.search(is_wanted, type="release")
 
         # Select the Random Music Agent Element
         random_element = random.randint(0, min(9999, len(response)) - 1)
@@ -217,7 +241,74 @@ async def new(ctx):
     try:
         ctx.voice_client.stop()
         await ctx.send("Skipped to a new song")
+    except Exception as e:
+        await ctx.send(f"Failed to skip to a new song: {str(e)}")
 
+
+# I Want Command
+@bot.command(
+    name="iwant",
+    help="This command makes the bot play music based on a specific request",
+)
+async def iwant(ctx, *, request):
+    global is_wanted
+    if ctx.voice_client is None:
+        await ctx.send(
+            "I'm not in a voice channel, use the '.join' command to make me join"
+        )
+        return
+
+    if not ctx.author.voice:
+        await ctx.send("You need to be in a voice channel to use this command")
+        return
+
+    if ctx.author.voice.channel != ctx.voice_client.channel:
+        await ctx.send(
+            "You need to be in the same voice channel as the bot to use this command"
+        )
+        return
+
+    if ctx.voice_client.is_playing():
+        ctx.voice_client.stop()
+
+    try:
+        is_wanted = request
+        await ctx.send(f"Searching similar songs of, {request}")
+        ctx.voice_client.stop()
+    except Exception as e:
+        await ctx.send(f"Failed to skip to a new song: {str(e)}")
+
+
+# Shuffle Command
+@bot.command(
+    name="shuffle",
+    help="This command makes the bot returns to play music random again",
+)
+async def iwant(ctx):
+    global is_wanted
+    if ctx.voice_client is None:
+        await ctx.send(
+            "I'm not in a voice channel, use the '.join' command to make me join"
+        )
+        return
+
+    if not ctx.author.voice:
+        await ctx.send("You need to be in a voice channel to use this command")
+        return
+
+    if ctx.author.voice.channel != ctx.voice_client.channel:
+        await ctx.send(
+            "You need to be in the same voice channel as the bot to use this command"
+        )
+        return
+
+    if ctx.voice_client.is_playing():
+        ctx.voice_client.stop()
+
+    try:
+        is_wanted = None
+        await ctx.send(f"Back to random radio music")
+        ctx.voice_client.stop()
     except Exception as e:
         await ctx.send(f"Failed to skip to a new song: {str(e)}")
 
