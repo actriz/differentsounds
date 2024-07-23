@@ -13,12 +13,13 @@ Just listen music that your algorithm not choose
 
 ## Commands
 
+- .help: Displays all available commands
 - .join: This command makes the bot access the voice channel
+- .stop: This command makes the bot end the radio session
 - .start: This command makes the bot start the radio session
-- .new: This command makes the bot pass to another new song
+- .new: This command makes the bot pass to new song
 - .iwant: This command makes the bot play music based on a specific request
 - .shuffle: This command makes the bot returns to play music random again 
-- .stop: This command makes the bot end the radio session
 
 ## Quick Start
 

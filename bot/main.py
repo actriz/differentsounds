@@ -37,19 +37,26 @@ is_wanted = None
     help="This command makes the bot access the voice channel",
 )
 async def join(ctx):
-    if ctx.author.voice:
-        channel = ctx.message.author.voice.channel
-        voice_client = discord.utils.get(bot.voice_clients, guild=ctx.guild)
-        if voice_client is not None:
-            await ctx.send("I am already in a voice channel")
-            return
-        try:
+    try:
+        if ctx.author.voice:
+            channel = ctx.author.voice.channel
+            voice_client = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+            if voice_client is not None:
+                if voice_client.channel == channel:
+                    await ctx.send("I am already in your voice channel")
+                else:
+                    await ctx.send(
+                        f"I am already in another voice channel: {voice_client.channel}"
+                    )
+                return
             await channel.connect()
             await ctx.send(f"Joined {channel}")
-        except Exception as e:
-            await ctx.send(f"Failed to join the channel: {str(e)}")
-    else:
-        await ctx.send("You are not in a voice channel")
+        else:
+            await ctx.send("You are not in a voice channel")
+    except discord.DiscordException as e:
+        await ctx.send(f"Failed to join the channel due to a Discord error: {str(e)}")
+    except Exception as e:
+        await ctx.send(f"An unexpected error occurred: {str(e)}")
 
 
 # Stop Command
@@ -59,20 +66,23 @@ async def join(ctx):
 )
 async def stop(ctx):
     global is_stopped
-    if ctx.voice_client:
-        if ctx.author.voice and ctx.author.voice.channel == ctx.voice_client.channel:
-            try:
-                is_stopped = True
-                await ctx.voice_client.disconnect()
-                await ctx.send("Disconnected from the voice channel")
-            except Exception as e:
-                await ctx.send(f"Failed to disconnect: {str(e)}")
-        else:
+    is_stopped = True
+    try:
+        voice_client = ctx.voice_client
+        if voice_client is None:
+            await ctx.send("I'm not in a voice channel")
+            return
+        if not ctx.author.voice or ctx.author.voice.channel != voice_client.channel:
             await ctx.send(
                 "You need to be in the same voice channel as the bot to stop it"
             )
-    else:
-        await ctx.send("I'm not in a voice channel")
+            return
+        await voice_client.disconnect()
+        await ctx.send("Disconnected from the voice channel")
+    except discord.DiscordException as e:
+        await ctx.send(f"Failed to disconnect due to a Discord error: {str(e)}")
+    except Exception as e:
+        await ctx.send(f"An unexpected error occurred: {str(e)}")
 
 
 # Start Command
@@ -88,51 +98,40 @@ async def start(ctx):
             "I'm not in a voice channel, use the '.join' command to make me join"
         )
         return
-
     if not (ctx.author.voice and ctx.author.voice.channel == ctx.voice_client.channel):
         await ctx.send(
             "You need to be in the same voice channel as the bot to use this command"
         )
         return
-
     if ctx.voice_client.is_playing():
         await ctx.send("The radio session is already playing")
         return
-
     if is_stopped:
         is_stopped = False
         return
-
     try:
         if is_wanted is None:
             # Random Genre
             genres = os.listdir("./genres-styles")
             genres_without_txt = [_.replace(".txt", "") for _ in genres]
             random_genre = random.choice(genres_without_txt)
-
             # Random Style
             styles = open(f"./genres-styles/{random_genre}.txt").read().splitlines()
             random_style = random.choice(styles)
-
             # Random Query
             query = random_genre + " " + random_style
-
             # Log Trace 0
-            history = open("log_music", "a")
-            history.write(f"Query: {query}\t")
-            history.close()
-
+            with open("log_music", "a") as history:
+                history.write(f"Query: {query}\t")
             # Generate the Query for Discogs API
             response = discogs.search(query, type="release")
+
         else:
             # Generate the Query for Discogs API
             response = discogs.search(is_wanted, type="release")
-
             # Log Trace 0
-            history = open("log_music", "a")
-            history.write(f"Query: {is_wanted}\t")
-            history.close()
-
+            with open("log_music", "a") as history:
+                history.write(f"Query: {is_wanted}\t")
             # Generate the Query for Discogs API
             response = discogs.search(is_wanted, type="release")
 
@@ -140,9 +139,8 @@ async def start(ctx):
         random_element = random.randint(0, min(9999, len(response)) - 1)
 
         # Log Trace 1
-        history = open("log_music", "a")
-        history.write(f"Random Element: {random_element}\t")
-        history.close()
+        with open("log_music", "a") as history:
+            history.write(f"Random Element: {random_element}\t")
 
         # Get the Author and Song
         selected_release = response[random_element]
@@ -159,19 +157,17 @@ async def start(ctx):
             song = random.choice(tracklist).title
 
         # Log Trace 2
-        history = open("log_music", "a")
-        history.write(f"ID: {selected_release.id}\t")
-        history.write(f"Author: {author}\t")
-        history.write(f"Song: {song}\t")
-        history.close()
+        with open("log_music", "a") as history:
+            history.write(f"ID: {selected_release.id}\t")
+            history.write(f"Author: {author}\t")
+            history.write(f"Song: {song}\t")
 
         # Merge the Author and Song
         author_and_song = f"{author} {song}"
 
         # Log Trace 3
-        history = open("log_music", "a")
-        history.write(f"Search: {author_and_song}\n")
-        history.close()
+        with open("log_music", "a") as history:
+            history.write(f"Search: {author_and_song}\n")
 
         # Youtube Music Search and Get Data
         search_results = ytmusic.search(author_and_song, filter="songs")
@@ -205,13 +201,7 @@ async def start(ctx):
                 discord.FFmpegPCMAudio(info["url"], **FFMPEG_OPTIONS),
                 after=lambda _: bot.loop.create_task(start(ctx)),
             )
-
     except Exception as e:
-        errorLog = open("log_error", "a")
-        errorLog.write(
-            f"Query: {query}\tRandom Element: {random_element}\tID: {selected_release.id}\tAuthor: {author}\tSong: {song}\tSearch: {author_and_song}\n"
-        )
-        errorLog.close()
         await ctx.send(f"An error occurred: {str(e)}")
         await ctx.invoke(bot.get_command("start"))
 
@@ -219,7 +209,7 @@ async def start(ctx):
 # New Command
 @bot.command(
     name="new",
-    help="This command makes the bot pass to another new song",
+    help="This command makes the bot pass to new song",
 )
 async def new(ctx):
     if ctx.voice_client is None:
@@ -227,22 +217,21 @@ async def new(ctx):
             "I'm not in a voice channel, use the '.join' command to make me join"
         )
         return
-
     if not (ctx.author.voice and ctx.author.voice.channel == ctx.voice_client.channel):
         await ctx.send(
             "You need to be in the same voice channel as the bot to use this command"
         )
         return
-
     if not ctx.voice_client.is_playing():
         await ctx.send("The bot is not currently playing any music")
         return
-
     try:
         ctx.voice_client.stop()
         await ctx.send("Skipped to a new song")
+    except discord.DiscordException as e:
+        await ctx.send(f"Failed to skip to a new song due to a Discord error: {str(e)}")
     except Exception as e:
-        await ctx.send(f"Failed to skip to a new song: {str(e)}")
+        await ctx.send(f"An unexpected error occurred: {str(e)}")
 
 
 # I Want Command
@@ -252,31 +241,29 @@ async def new(ctx):
 )
 async def iwant(ctx, *, request):
     global is_wanted
+    is_wanted = request
     if ctx.voice_client is None:
         await ctx.send(
             "I'm not in a voice channel, use the '.join' command to make me join"
         )
         return
-
     if not ctx.author.voice:
         await ctx.send("You need to be in a voice channel to use this command")
         return
-
     if ctx.author.voice.channel != ctx.voice_client.channel:
         await ctx.send(
             "You need to be in the same voice channel as the bot to use this command"
         )
         return
-
-    if ctx.voice_client.is_playing():
-        ctx.voice_client.stop()
-
     try:
-        is_wanted = request
-        await ctx.send(f"Searching similar songs of, {request}")
         ctx.voice_client.stop()
+        await ctx.send(f"Searching for songs similar to {request}")
+    except discord.DiscordException as e:
+        await ctx.send(
+            f"Failed to process your request due to a Discord error: {str(e)}"
+        )
     except Exception as e:
-        await ctx.send(f"Failed to skip to a new song: {str(e)}")
+        await ctx.send(f"An unexpected error occurred: {str(e)}")
 
 
 # Shuffle Command
@@ -286,31 +273,27 @@ async def iwant(ctx, *, request):
 )
 async def iwant(ctx):
     global is_wanted
+    is_wanted = None
     if ctx.voice_client is None:
         await ctx.send(
             "I'm not in a voice channel, use the '.join' command to make me join"
         )
         return
-
     if not ctx.author.voice:
         await ctx.send("You need to be in a voice channel to use this command")
         return
-
     if ctx.author.voice.channel != ctx.voice_client.channel:
         await ctx.send(
             "You need to be in the same voice channel as the bot to use this command"
         )
         return
-
-    if ctx.voice_client.is_playing():
-        ctx.voice_client.stop()
-
     try:
-        is_wanted = None
-        await ctx.send(f"Back to random radio music")
         ctx.voice_client.stop()
+        await ctx.send("Back to random radio music")
+    except discord.DiscordException as e:
+        await ctx.send(f"Failed to shuffle due to a Discord error: {str(e)}")
     except Exception as e:
-        await ctx.send(f"Failed to skip to a new song: {str(e)}")
+        await ctx.send(f"An unexpected error occurred: {str(e)}")
 
 
 # Launch Random Radio BOT
