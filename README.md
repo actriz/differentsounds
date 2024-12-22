@@ -27,7 +27,7 @@ Follow the next steps
 
 ```bash
 # Clone this repository
-$ git clone https://github.com/raulgalis/differentsounds
+$ git clone https://github.com/actriz/differentsounds
 
 # Go into the repository and install the requirements.txt
 $ cd differentsounds
